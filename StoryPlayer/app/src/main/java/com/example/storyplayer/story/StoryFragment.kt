@@ -102,7 +102,7 @@ class StoryFragment : Fragment() {
             progressBar.progress = 0
             handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
         } else{
-            resumeStory()
+            resumeStoryAndVideo()
         }
     }
 
@@ -150,7 +150,7 @@ class StoryFragment : Fragment() {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     startX = event.x // Store the initial touch position
-                    pauseStory()
+                    pauseStoryAndVideo()
                 }
                 MotionEvent.ACTION_UP -> {
                     val diffX = event.x - startX
@@ -165,7 +165,7 @@ class StoryFragment : Fragment() {
                             moveToNextStory()
                         }
                     } else{
-                        resumeStory()
+                        resumeStoryAndVideo()
                     }
                 }
             }
@@ -187,7 +187,7 @@ class StoryFragment : Fragment() {
             progressBar.progress = 0
             handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
         } else{
-            resumeStory()
+            resumeStoryAndVideo()
         }
     }
 
@@ -196,8 +196,19 @@ class StoryFragment : Fragment() {
         handler.removeCallbacks(progressUpdater)
     }
 
-    private fun resumeStory() {
+    private fun pauseStoryAndVideo() {
+        Log.i("Story","Paused")
+        if (stories[currentPageIndex].isVideo){
+            adapter.pauseVideoAtPosition(currentPageIndex)
+        }
+        handler.removeCallbacks(progressUpdater)
+    }
+
+    private fun resumeStoryAndVideo() {
         Log.i("Story","Resumed")
+        if (stories[currentPageIndex].isVideo){
+            adapter.resumeVideoAtPosition(currentPageIndex)
+        }
         handler.postDelayed(progressUpdater, 0)
     }
 

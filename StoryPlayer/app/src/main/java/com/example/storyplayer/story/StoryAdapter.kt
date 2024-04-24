@@ -17,6 +17,10 @@ class StoryAdapter (val stories: List<StoryItem>): RecyclerView.Adapter<StoryAda
 
     inner class StoryAdapterViewHolder(val binding: StoryItemBinding): RecyclerView.ViewHolder(binding.root)
 
+
+    private lateinit var recyclerView: RecyclerView
+
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StoryAdapterViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding: StoryItemBinding = DataBindingUtil.inflate(inflater, R.layout.story_item, parent,false)
@@ -61,6 +65,21 @@ class StoryAdapter (val stories: List<StoryItem>): RecyclerView.Adapter<StoryAda
             // Default duration for images
             5000L
         }
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        this.recyclerView = recyclerView
+    }
+
+    fun pauseVideoAtPosition(position: Int) {
+        val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? StoryAdapterViewHolder
+        viewHolder?.binding?.videoView?.pause()
+    }
+
+    fun resumeVideoAtPosition(position: Int) {
+        val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? StoryAdapterViewHolder
+        viewHolder?.binding?.videoView?.start()
     }
 
 
