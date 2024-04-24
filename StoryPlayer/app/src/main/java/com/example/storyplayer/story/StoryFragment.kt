@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.viewpager2.widget.ViewPager2
 import com.example.storyplayer.R
+import com.example.storyplayer.animation.CubicPageTransformer
 import com.example.storyplayer.databinding.FragmentStoryBinding
 import kotlin.math.abs
 
@@ -57,6 +58,7 @@ class StoryFragment : Fragment() {
         viewPager2 = binding.viewPager
         adapter = StoryAdapter(images)
         viewPager2.adapter = adapter
+        viewPager2.setPageTransformer(CubicPageTransformer())
         progressBar = binding.storyProgressBar
         initProgressUpdaterRunnable(0)
         initTouchOverlay2()
@@ -98,6 +100,8 @@ class StoryFragment : Fragment() {
             // Reset progress bar for the next story
             progressBar.progress = 0
             handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
+        } else{
+            resumeStory()
         }
     }
 
@@ -173,6 +177,8 @@ class StoryFragment : Fragment() {
             // Reset progress bar for the previous story
             progressBar.progress = 0
             handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
+        } else{
+            resumeStory()
         }
     }
 
