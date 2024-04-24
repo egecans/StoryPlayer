@@ -15,6 +15,7 @@ import android.widget.ProgressBar
 import androidx.viewpager2.widget.ViewPager2
 import com.example.storyplayer.R
 import com.example.storyplayer.databinding.FragmentStoryBinding
+import kotlin.math.abs
 
 
 class StoryFragment : Fragment() {
@@ -32,7 +33,6 @@ class StoryFragment : Fragment() {
     private lateinit var pageChangeCallback: ViewPager2.OnPageChangeCallback
 
     private lateinit var progressBar: ProgressBar
-    private var currentProgress = 0
     private val progressUpdateInterval: Long = 50 // Update the progress bar every 50 milliseconds
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -59,7 +59,7 @@ class StoryFragment : Fragment() {
         viewPager2.adapter = adapter
         progressBar = binding.storyProgressBar
         initProgressUpdaterRunnable(0)
-        initTouchOverlay()
+        initTouchOverlay2()
     }
 
     /**
@@ -125,6 +125,54 @@ class StoryFragment : Fragment() {
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> resumeStory()
             }
             true // Consume the event
+        }
+    }
+
+    private var startX: Float = 0f // Variable to store the initial touch position
+    private val minSwipeDistance = 30f
+    @SuppressLint("ClickableViewAccessibility")
+
+    private fun initTouchOverlay2() {
+        val touchOverlay = binding.touchOverlay
+        touchOverlay.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    startX = event.x // Store the initial touch position
+                    pauseStory()
+                }
+                MotionEvent.ACTION_UP -> {
+                    val diffX = event.x - startX
+                    // calculate the difference between when user rest and hold
+                    if (abs(diffX) > minSwipeDistance) {
+                        // when user tap right and slide left which is moving back
+                        if (diffX > 0) {
+                            moveToPreviousStory()
+                        }
+                        // when user tap left and slide right which is moving to the next story
+                        else {
+                            moveToNextStory()
+                        }
+                    } else{
+                        resumeStory()
+                    }
+                }
+            }
+            true // Consume the event
+        }
+    }
+
+    /**
+     * It moves to the previous story
+     */
+    private fun moveToPreviousStory() {
+        // if it is not the first story continue
+        if (currentPageIndex > 0) {
+            val prevItem = currentPageIndex - 1
+            viewPager2.setCurrentItem(prevItem, true) // true for smooth scrolling
+            currentPageIndex = prevItem // Update the current page index
+            // Reset progress bar for the previous story
+            progressBar.progress = 0
+            handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
         }
     }
 
