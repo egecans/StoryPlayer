@@ -1,12 +1,24 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+}
+kapt {
+    correctErrorTypes = true
 }
 
 android {
     namespace 'com.example.storyplayer'
     compileSdk 33
 
+    // I added this for binding
+    buildFeatures {
+        buildConfig true
+        viewBinding = true
+        dataBinding true
+        aidl true
+    }
     defaultConfig {
         applicationId "com.example.storyplayer"
         minSdk 24
@@ -15,6 +27,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -24,21 +37,86 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
+
 }
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'androidx.core:core-ktx:1.10.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    implementation fileTree(dir: 'libs', include: ['*.aar'])
+
+    implementation("com.google.zxing:core:3.4.0")
+
+    //lifecycle
+    def lifecycle_version = "2.6.1"
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version") // ViewModel
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version")
+    //noinspection LifecycleAnnotationProcessorWithJava8
+    kapt("androidx.lifecycle:lifecycle-compiler:$lifecycle_version")
+
+    def room_version = "2.5.1"
+    implementation("androidx.room:room-runtime:2.5.1")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+    // To use Kotlin annotation processing tool (kapt)
+    kapt("androidx.room:room-compiler:$room_version")
+
+    //androidx
+    implementation("androidx.concurrent:concurrent-futures-ktx:1.1.0")
+
+    // Kotlin Extensions and Coroutines support for Room
+    implementation "androidx.room:room-ktx:2.5.1"
+
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+
+    //lifecycle
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation "androidx.lifecycle:lifecycle-common-java8:2.6.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
+
+    // Coroutine Lifecycle Scopes
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
+
+    //apache for string utils
+    implementation 'org.apache.commons:commons-text:1.9'
+
+    //dagger-hilt
+    implementation("com.google.dagger:hilt-android:2.46")
+    //because it gives an error with hilt-android 2.46 it's older version. I wastes my 2 hours..
+    kapt("com.google.dagger:hilt-android-compiler:2.44")
+    //to add dagger-hilt by viewModel()
+    implementation "androidx.fragment:fragment-ktx:1.5.7"
+
+    //Gson
+    implementation 'com.google.code.gson:gson:2.8.9'
+
+    // qr sale
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+
+    // ui Components
+    implementation 'com.airbnb.android:lottie:4.2.0'
+
+    // asynclayoutinflater for settings bank error
+    implementation 'androidx.asynclayoutinflater:asynclayoutinflater:1.0.0'
+}
+
+// Allow references to generated code
+kapt {
+    correctErrorTypes true
 }
