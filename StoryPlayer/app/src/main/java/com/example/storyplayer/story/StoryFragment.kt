@@ -10,11 +10,11 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.viewpager2.widget.ViewPager2
 import com.example.storyplayer.R
 import com.example.storyplayer.animation.CubicPageTransformer
+import com.example.storyplayer.data.StoryItem
 import com.example.storyplayer.databinding.FragmentStoryBinding
 import kotlin.math.abs
 
@@ -22,7 +22,7 @@ import kotlin.math.abs
 class StoryFragment : Fragment() {
 
     private lateinit var binding: FragmentStoryBinding
-    private lateinit var images: List<Int>
+    private lateinit var stories: List<StoryItem>
     private lateinit var adapter: StoryAdapter
     private lateinit var viewPager2: ViewPager2
 
@@ -34,7 +34,7 @@ class StoryFragment : Fragment() {
     private lateinit var pageChangeCallback: ViewPager2.OnPageChangeCallback
 
     private lateinit var progressBar: ProgressBar
-    private val progressUpdateInterval: Long = 50 // Update the progress bar every 50 milliseconds
+    private var progressUpdateInterval: Long = 50 // Update the progress bar every 50 milliseconds
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -53,10 +53,9 @@ class StoryFragment : Fragment() {
      * It calls initialization functions that will called in onViewCreated to make our class more tidy
      */
     private fun initItems(){
-        Log.i("initItems","Entered")
-        images = initImages()
+        stories = initStories()
         viewPager2 = binding.viewPager
-        adapter = StoryAdapter(images)
+        adapter = StoryAdapter(stories)
         viewPager2.adapter = adapter
         viewPager2.setPageTransformer(CubicPageTransformer())
         progressBar = binding.storyProgressBar
@@ -70,10 +69,10 @@ class StoryFragment : Fragment() {
      */
     private fun initProgressUpdaterRunnable(initProgress: Int){
         progressBar.progress = initProgress
-        Log.i("initProgressUpdaterRunnable","Entered")
+        initProgressUpdateInterval(currentPageIndex)
+
         progressUpdater = object : Runnable {
             override fun run() {
-                Log.i("progressUpdater","Entered")
                 if (progressBar.progress < progressBar.max) {
                     progressBar.incrementProgressBy(1) // Increment progress
                     handler.postDelayed(this, progressUpdateInterval) // call it every 50msec
@@ -94,7 +93,9 @@ class StoryFragment : Fragment() {
     private fun moveToNextStory(){
         // if it is not the last story continue
         if (currentPageIndex < adapter.itemCount - 1){
+
             val nextItem =  currentPageIndex + 1
+            initProgressUpdateInterval(nextItem)
             viewPager2.setCurrentItem(nextItem, true) // true for smooth scrolling
             currentPageIndex = nextItem // Update the current page index
             // Reset progress bar for the next story
@@ -108,32 +109,39 @@ class StoryFragment : Fragment() {
     /**
      * It gives stories into the list
      */
-    private fun initImages(): List<Int>{
+    private fun initStories(): List<StoryItem>{
         return listOf(
-            R.drawable.cat,
-            R.drawable.jph,
-            R.drawable.kelebek
+            StoryItem(R.drawable.cat, false),
+            StoryItem( R.drawable.jph, false),
+            StoryItem(R.raw.short_video, true),
+            StoryItem( R.drawable.kelebek, false),
+            StoryItem(R.raw.long_video, true),
         )
     }
 
     /**
-     * This is invisible frame, it understand when user holds on the screen for pausing,
-     * when user clicks the screen it pauses the story, else it continue
+     * Updates the progress bar's interval with respect to image or the video files length
      */
-    @SuppressLint("ClickableViewAccessibility")
-    private fun initTouchOverlay(){
-        val touchOverlay = binding.touchOverlay
-        touchOverlay.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> pauseStory()
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> resumeStory()
-            }
-            true // Consume the event
+    private fun initProgressUpdateInterval(position: Int){
+        progressUpdateInterval = if (stories[position].isVideo){
+            val videoLength = adapter.getVideoDuration(position,requireContext())
+            Log.i("VideoLength: ", videoLength.toString())
+            videoLength/100
+        } else{
+            50
         }
+
     }
+
 
     private var startX: Float = 0f // Variable to store the initial touch position
     private val minSwipeDistance = 30f
+
+    /**
+     * This is invisible frame, it understand when user holds on the screen for pausing,
+     * when user clicks the screen it pauses the story, else it continue
+     * It slides moves to the previous story when slide left, next story when slide right
+     */
     @SuppressLint("ClickableViewAccessibility")
 
     private fun initTouchOverlay2() {
@@ -172,6 +180,7 @@ class StoryFragment : Fragment() {
         // if it is not the first story continue
         if (currentPageIndex > 0) {
             val prevItem = currentPageIndex - 1
+            initProgressUpdateInterval(prevItem)
             viewPager2.setCurrentItem(prevItem, true) // true for smooth scrolling
             currentPageIndex = prevItem // Update the current page index
             // Reset progress bar for the previous story
@@ -198,69 +207,4 @@ class StoryFragment : Fragment() {
         viewPager2.unregisterOnPageChangeCallback(pageChangeCallback)
         handler.removeCallbacks(progressUpdater) // Clean up the handler
     }
-
-    /**
-     * It inits slider, as it has next object it will slide to the next in 5 sec
-     * and updates progressUpdater in every 50 msec
-
-    private fun initSlider() {
-    Log.i("initSlider","Entered")
-    slideRunnable = Runnable {
-    Log.i("slideRunnable","Entered")
-    val nextItem = if (currentPageIndex < adapter.itemCount - 1) currentPageIndex + 1 else 0
-    viewPager2.setCurrentItem(nextItem, true) // true for smooth scrolling
-    currentPageIndex = nextItem // Update the current page index
-    // Reset progress bar for the next story
-    progressBar.progress = 0
-    // Restart the progress updater for the new story
-    handler.removeCallbacks(progressUpdater)
-    handler.postDelayed(progressUpdater, progressUpdateInterval)
-    }
-    }
-     */
-
-
-    /**
-     * Here is the progressbar's function, it will update the progressbar until it reaches the maximum (%100)
-
-    private fun startProgress() {
-        Log.i("startProgress","Entered")
-        progressBar.progress = 0
-        val progressRunnable = object : Runnable {
-            override fun run() {
-                if (progressBar.progress < progressBar.max) {
-                    progressBar.incrementProgressBy(1) // Increment progress
-                    handler.postDelayed(this, progressUpdateInterval)
-                } else {
-                    moveToNextStory()
-                }
-            }
-        }
-        handler.postDelayed(progressRunnable, progressUpdateInterval)
-    }
-
-
-    private fun moveToNextStory() {
-        Log.i("moveToNextStory","Entered")
-        val nextItem = (viewPager2.currentItem + 1) % adapter.itemCount
-        viewPager2.currentItem = nextItem
-    }
-     */
-    /**
-     * This initializes view pager's callback function. It starts  the progess
-
-    private fun setupViewPagerCallback() {
-        Log.i("setupViewPagerCallback","Enter")
-        viewPager2.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                Log.i("onPageSelected","Enter")
-                super.onPageSelected(position)
-                handler.removeCallbacksAndMessages(null) // Clear all existing callbacks
-                val initProgress = if (progressBar.progress == progressBar.max) 0 else progressBar.progress
-                initProgressUpdaterRunnable(initProgress) // Start the progress for the new page
-            }
-        })
-    }
-     */
-
 }
