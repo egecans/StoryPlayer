@@ -5,10 +5,12 @@
 /.idea/libraries
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+/.idea/modules.xml
+/.idea/workspace.xml
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
-/.idea/workspace.xml
+
