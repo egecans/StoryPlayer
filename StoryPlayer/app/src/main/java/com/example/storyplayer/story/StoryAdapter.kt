@@ -10,10 +10,11 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.storyplayer.R
+import com.example.storyplayer.data.StoryGroup
 import com.example.storyplayer.data.StoryItem
 import com.example.storyplayer.databinding.StoryItemBinding
 
-class StoryAdapter (val stories: List<StoryItem>): RecyclerView.Adapter<StoryAdapter.StoryAdapterViewHolder>() {
+class StoryAdapter (val stories: List<StoryGroup>): RecyclerView.Adapter<StoryAdapter.StoryAdapterViewHolder>() {
 
     inner class StoryAdapterViewHolder(val binding: StoryItemBinding): RecyclerView.ViewHolder(binding.root)
 
@@ -32,7 +33,8 @@ class StoryAdapter (val stories: List<StoryItem>): RecyclerView.Adapter<StoryAda
     }
 
     override fun onBindViewHolder(holder: StoryAdapterViewHolder, position: Int) {
-        val currentStory = stories[position]
+        val currentStoryGroup = stories[position]
+        val currentStory = currentStoryGroup.storyItems[currentStoryGroup.lastSeenStoryIndex]
         val binding = holder.binding
         if (currentStory.isVideo) {
             // Display VideoView for video story
@@ -56,10 +58,25 @@ class StoryAdapter (val stories: List<StoryItem>): RecyclerView.Adapter<StoryAda
         }
     }
 
-    fun getVideoDuration(position: Int, context: Context): Long {
-        return if (stories[position].isVideo) {
+    /**
+     * Set last seen story index in the adapter also
+     */
+    fun setLastSeenStoryIndex(groupPosition: Int, storyIndex: Int) {
+        if (groupPosition < stories.size) {
+            val storyGroup = stories[groupPosition]
+            storyGroup.lastSeenStoryIndex = storyIndex
+            storyGroup.storyItems.forEachIndexed { index, storyItem ->
+                storyItem.seenYet = index <= storyIndex
+            }
+            notifyItemChanged(groupPosition)
+        }
+    }
+
+
+    fun getVideoDuration(groupIndex: Int,position: Int, context: Context): Long {
+        return if (stories[groupIndex].storyItems[position].isVideo) {
             // Retrieve and return the video duration
-            val videoUri = Uri.parse("android.resource://" + context.packageName + "/" + stories[position].resourceId)
+            val videoUri = Uri.parse("android.resource://" + context.packageName + "/" + stories[groupIndex].storyItems[position].resourceId)
             MediaPlayer.create(context, videoUri)?.duration?.toLong() ?: 0L
         } else {
             // Default duration for images
