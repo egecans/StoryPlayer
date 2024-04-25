@@ -232,7 +232,7 @@ class StoryFragment : Fragment() {
             progressBar.progress = 0
             handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
         } else{
-            resumeStoryAndVideo()
+            restartStoryAndVideo()
             if (progressBar.progress == progressBar.max){
                 pauseStoryAndVideo()
             }
@@ -260,11 +260,11 @@ class StoryFragment : Fragment() {
             // if it's video resume
             val currentStoryGroup = stories[currentGroupIndex]
             if (currentStoryGroup.storyItems[currentStoryGroup.lastSeenStoryIndex].isVideo){
-                adapter.resumeVideoAtPosition(currentGroupIndex)
+                adapter.restartVideo(currentGroupIndex)
             }
             handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
         } else{
-            resumeStoryAndVideo()
+            restartStoryAndVideo()
         }
     }
 
@@ -328,6 +328,15 @@ class StoryFragment : Fragment() {
         val currentStoryGroup = stories[currentGroupIndex]
         if (currentStoryGroup.storyItems[currentStoryGroup.lastSeenStoryIndex].isVideo){
             adapter.resumeVideoAtPosition(currentGroupIndex)
+        }
+        handler.postDelayed(progressUpdater, 0)
+    }
+
+    private fun restartStoryAndVideo() {
+        Log.i("Story","Resumed")
+        val currentStoryGroup = stories[currentGroupIndex]
+        if (currentStoryGroup.storyItems[currentStoryGroup.lastSeenStoryIndex].isVideo){
+            adapter.restartVideo(currentGroupIndex)
         }
         handler.postDelayed(progressUpdater, 0)
     }

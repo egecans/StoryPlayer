@@ -93,8 +93,7 @@ class StoryAdapter (val stories: List<StoryGroup>): RecyclerView.Adapter<StoryAd
         this.recyclerView = recyclerView
     }
 
-
-    fun resumeVideoAtPosition(position: Int) {
+    fun restartVideo(position: Int) {
         val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? StoryAdapterViewHolder
         viewHolder?.let { holder ->
             val storyItem = stories[position].storyItems[stories[position].lastSeenStoryIndex]
@@ -110,6 +109,11 @@ class StoryAdapter (val stories: List<StoryGroup>): RecyclerView.Adapter<StoryAd
                 }
             }
         }
+    }
+
+    fun resumeVideoAtPosition(position: Int) {
+        val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? StoryAdapterViewHolder
+        viewHolder?.binding?.videoView?.start()
     }
 
     fun pauseVideoAtPosition(position: Int) {
