@@ -72,12 +72,16 @@ class StoryAdapter (val stories: List<StoryGroup>): RecyclerView.Adapter<StoryAd
         }
     }
 
-
     fun getVideoDuration(groupIndex: Int,position: Int, context: Context): Long {
         return if (stories[groupIndex].storyItems[position].isVideo) {
             // Retrieve and return the video duration
             val videoUri = Uri.parse("android.resource://" + context.packageName + "/" + stories[groupIndex].storyItems[position].resourceId)
-            MediaPlayer.create(context, videoUri)?.duration?.toLong() ?: 0L
+            val mediaPlayer: MediaPlayer? = MediaPlayer.create(context, videoUri)
+            try {
+                return mediaPlayer?.duration?.toLong() ?: 0L
+            } finally {
+                mediaPlayer?.release()
+            }
         } else {
             // Default duration for images
             5000L
@@ -89,15 +93,49 @@ class StoryAdapter (val stories: List<StoryGroup>): RecyclerView.Adapter<StoryAd
         this.recyclerView = recyclerView
     }
 
+
+    fun resumeVideoAtPosition(position: Int) {
+        val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? StoryAdapterViewHolder
+        viewHolder?.let { holder ->
+            val storyItem = stories[position].storyItems[stories[position].lastSeenStoryIndex]
+            if (storyItem.isVideo) {
+                holder.binding.videoView.setVideoURI(Uri.parse("android.resource://" + holder.itemView.context.packageName + "/" + storyItem.resourceId))
+                holder.binding.videoView.setOnPreparedListener { mediaPlayer ->
+                    mediaPlayer.start()
+                    // Optional: Handle video looping or ending here
+                }
+                holder.binding.videoView.setOnErrorListener { _, _, _ ->
+                    Log.e("VideoView", "Error playing video")
+                    true
+                }
+            }
+        }
+    }
+
     fun pauseVideoAtPosition(position: Int) {
         val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? StoryAdapterViewHolder
         viewHolder?.binding?.videoView?.pause()
     }
 
-    fun resumeVideoAtPosition(position: Int) {
-        val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? StoryAdapterViewHolder
-        viewHolder?.binding?.videoView?.start()
+    /**
+    fun pauseVideoAtPosition(position: Int) {
+    val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? StoryAdapterViewHolder
+    viewHolder?.binding?.videoView?.pause()
     }
+    fun resumeVideoAtPosition(position: Int) {
+    val viewHolder = recyclerView.findViewHolderForAdapterPosition(position) as? StoryAdapterViewHolder
+    viewHolder?.binding?.videoView?.start()
+    }
+     */
 
+
+    /**
+     * When video is playing, changing the story group
+     */
+    override fun onViewRecycled(holder: StoryAdapterViewHolder) {
+        super.onViewRecycled(holder)
+        // Stop the video if it is currently playing
+        holder.binding.videoView.stopPlayback()
+    }
 
 }

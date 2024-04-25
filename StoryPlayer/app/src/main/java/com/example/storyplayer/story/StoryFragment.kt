@@ -90,49 +90,6 @@ class StoryFragment : Fragment() {
     }
 
     /**
-     * It moves to the next story group, by updating progress and calling its callback and
-     * set current story as the next one
-     */
-    private fun moveToNextStoryGroup(){
-        // if it is not the last story continue
-        if (currentGroupIndex < adapter.itemCount - 1){
-
-            val nextItem =  currentGroupIndex + 1
-            // next story group
-            initProgressUpdateInterval(nextItem, stories[nextItem].lastSeenStoryIndex)
-            viewPager2.setCurrentItem(nextItem, true) // true for smooth scrolling
-            currentGroupIndex = nextItem // Update the current page index
-            // Reset progress bar for the next story
-            progressBar.progress = 0
-            handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
-        } else{
-            resumeStoryAndVideo()
-        }
-    }
-
-    /**
-     * It moves to the next story, by updating progress and calling its callback and
-     * set current story as the next one
-     */
-    private fun moveToNextStory(){
-        // if it is not the last story continue
-        val currentStoryGroup = stories[currentGroupIndex]
-        if (currentStoryGroup.lastSeenStoryIndex < currentStoryGroup.storyItems.size - 1){
-            val nextStoryIndex =  currentStoryGroup.lastSeenStoryIndex + 1
-            currentStoryGroup.lastSeenStoryIndex = nextStoryIndex //update storyIndex
-            adapter.setLastSeenStoryIndex(currentGroupIndex,nextStoryIndex)
-            // next story group
-            initProgressUpdateInterval(currentGroupIndex, stories[currentGroupIndex].lastSeenStoryIndex)
-            viewPager2.setCurrentItem(currentGroupIndex, true) // true for smooth scrolling
-            // Reset progress bar for the next story
-            progressBar.progress = 0
-            handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
-        } else{
-            moveToNextStoryGroup()
-        }
-    }
-
-    /**
      * It gives stories into the list
      */
     private fun initStories(): List<StoryGroup>{
@@ -200,7 +157,12 @@ class StoryFragment : Fragment() {
                             moveToNextStoryGroup()
                         }
                     } else{
-                        resumeStoryAndVideo()
+                        val screenWidth = touchOverlay.width // Overlay'in genişliğini al
+                        when {
+                            startX < screenWidth * 0.2 -> moveToPreviousStory()
+                            startX > screenWidth * 0.8 -> moveToNextStory()
+                            else -> resumeStoryAndVideo()
+                        }
                     }
                 }
             }
@@ -209,23 +171,72 @@ class StoryFragment : Fragment() {
     }
 
     /**
-     * It moves to the previous story
+     * It moves to the next story group, by updating progress and calling its callback and
+     * set current story as the next one
      */
-    private fun moveToPreviousStoryGroup() {
-        // if it is not the first story continue
-        if (currentGroupIndex > 0) {
-            val prevItem = currentGroupIndex - 1
-            // prev story group
-            initProgressUpdateInterval(prevItem, stories[currentGroupIndex].lastSeenStoryIndex)
-            viewPager2.setCurrentItem(prevItem, true) // true for smooth scrolling
-            currentGroupIndex = prevItem // Update the current page index
-            // Reset progress bar for the previous story
+    private fun moveToNextStoryGroup(){
+        // if it is not the last story continue
+        if (currentGroupIndex < adapter.itemCount - 1){
+
+            val nextItem =  currentGroupIndex + 1
+            // next story group
+            initProgressUpdateInterval(nextItem, stories[nextItem].lastSeenStoryIndex)
+            viewPager2.setCurrentItem(nextItem, true) // true for smooth scrolling
+            currentGroupIndex = nextItem // Update the current page index
+            // Reset progress bar for the next story
             progressBar.progress = 0
             handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
         } else{
             resumeStoryAndVideo()
         }
     }
+
+    /**
+     * It moves to the previous story group
+     */
+    private fun moveToPreviousStoryGroup() {
+        // if it is not the first story continue
+        if (currentGroupIndex > 0) {
+            val prevItem = currentGroupIndex - 1
+            // prev story group
+            initProgressUpdateInterval(prevItem, stories[prevItem].lastSeenStoryIndex)
+            viewPager2.setCurrentItem(prevItem, true) // true for smooth scrolling
+            currentGroupIndex = prevItem // Update the current page index
+            // Reset progress bar for the previous story
+            progressBar.progress = 0
+            // if it's video resume
+            val currentStoryGroup = stories[currentGroupIndex]
+            if (currentStoryGroup.storyItems[currentStoryGroup.lastSeenStoryIndex].isVideo){
+                adapter.resumeVideoAtPosition(currentGroupIndex)
+            }
+            handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
+        } else{
+            resumeStoryAndVideo()
+        }
+    }
+
+    /**
+     * It moves to the next story, by updating progress and calling its callback and
+     * set current story as the next one
+     */
+    private fun moveToNextStory(){
+        // if it is not the last story continue
+        val currentStoryGroup = stories[currentGroupIndex]
+        if (currentStoryGroup.lastSeenStoryIndex < currentStoryGroup.storyItems.size - 1){
+            val nextStoryIndex =  currentStoryGroup.lastSeenStoryIndex + 1
+            currentStoryGroup.lastSeenStoryIndex = nextStoryIndex //update storyIndex
+            adapter.setLastSeenStoryIndex(currentGroupIndex,nextStoryIndex)
+            // next story group
+            initProgressUpdateInterval(currentGroupIndex, stories[currentGroupIndex].lastSeenStoryIndex)
+            viewPager2.setCurrentItem(currentGroupIndex, true) // true for smooth scrolling
+            // Reset progress bar for the next story
+            progressBar.progress = 0
+            handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
+        } else{
+            moveToNextStoryGroup()
+        }
+    }
+
 
     private fun moveToPreviousStory() {
         // if it is not the first story continue
