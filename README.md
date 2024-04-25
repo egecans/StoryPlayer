@@ -31,8 +31,19 @@ To open the project in Android Studio, follow these steps:
 
 6. You can follow the images to switch to the Android Scope also
 
+
 <img width="778" alt="Screenshot 2024-04-25 at 10 23 56" src="https://github.com/egecans/StoryPlayer/assets/87999176/57698548-ae54-4b87-8709-030d9f050ae1">
-<img width="1380" alt="Screenshot 2024-04-25 at 10 24 26" src="https://github.com/egecans/StoryPlayer/assets/87999176/f63b47a7-e198-4638-a3f2-2468b555a487">
+<img width="1393" alt="Screenshot 2024-04-25 at 11 11 51" src="https://github.com/egecans/StoryPlayer/assets/87999176/e54267c6-e267-4eb6-aa38-529257f6c934">
 <img width="425" alt="Screenshot 2024-04-25 at 10 32 09" src="https://github.com/egecans/StoryPlayer/assets/87999176/fa068266-77a5-4419-b5ae-766420102412">
+
+<details><summary><h3> If it couldn't work somehow you should do Invalidate caches from file -> invalidate caches.. </h3></summary>
+<img width="1434" alt="Screenshot 2024-04-25 at 11 08 12" src="https://github.com/egecans/StoryPlayer/assets/87999176/4436c759-52c9-41f4-b606-71ead904316b">
+<img width="781" alt="Screenshot 2024-04-25 at 11 08 55" src="https://github.com/egecans/StoryPlayer/assets/87999176/07dd091b-0195-411d-bb04-7e8da4e9ca4d">
+<img width="1439" alt="Screenshot 2024-04-25 at 11 12 50" src="https://github.com/egecans/StoryPlayer/assets/87999176/5ec66d11-cacc-4c89-9668-80d1d12a1716">
+
 </details>
+
+</details>
+
+
 
