@@ -225,6 +225,9 @@ class StoryFragment : Fragment() {
             handler.postDelayed(progressUpdater, progressUpdateInterval) // call it every 50msec
         } else{
             resumeStoryAndVideo()
+            if (progressBar.progress == progressBar.max){
+                pauseStoryAndVideo()
+            }
         }
     }
 
