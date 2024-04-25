@@ -54,5 +54,14 @@ To open the project in Android Studio, follow these steps:
 
 </details>
 
+<details><summary><h2> Installing apk on your android device directly </h2></summary>
 
+Here is the [apk](https://help.esper.io/hc/en-us/articles/12657625935761-Installing-the-Android-Debug-Bridge-ADB-Tool)
 
+If you have an android device, open its developer mode, and connect to your computer. Then you should install the apk by adb install. With the following command:
+
+adb install <path_to_app-debug.apk> 
+
+If your device doesn't have adb you should install adb first by the [following link](https://help.esper.io/hc/en-us/articles/12657625935761-Installing-the-Android-Debug-Bridge-ADB-Tool)
+
+</details>
