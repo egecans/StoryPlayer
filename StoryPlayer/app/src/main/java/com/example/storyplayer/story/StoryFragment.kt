@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.viewpager2.widget.ViewPager2
 import com.example.storyplayer.R
@@ -31,12 +32,12 @@ class StoryFragment : Fragment() {
 
     private lateinit var progressUpdater: Runnable
 
-    private var currentPageIndex = 0
     private var currentGroupIndex = 0
 
     private lateinit var pageChangeCallback: ViewPager2.OnPageChangeCallback
 
     private lateinit var progressBar: ProgressBar
+    private lateinit var progressBarContainer: LinearLayout
     private var progressUpdateInterval: Long = 50 // Update the progress bar every 50 milliseconds
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -61,9 +62,26 @@ class StoryFragment : Fragment() {
         adapter = StoryAdapter(stories)
         viewPager2.adapter = adapter
         viewPager2.setPageTransformer(CubicPageTransformer())
-        progressBar = binding.storyProgressBar
+        //progressBar = binding.storyProgressBar
+        progressBarContainer = binding.progressBarContainer
+        createProgressBars(stories[currentGroupIndex].storyItems.size)
         initProgressUpdaterRunnable()
-        initTouchOverlay2()
+        initTouchOverlay()
+    }
+
+    /**
+     * Crate progress bars as story group's length
+     */
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private fun createProgressBars(storyCount: Int) {
+        binding.progressBarContainer.removeAllViews() // Clear existing progress bars if any
+        for (i in 0 until storyCount) {
+            val progressBar = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal).apply {
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f / storyCount) // Weighted equally
+                progressDrawable = context?.getDrawable(R.drawable.story_progress_bar)
+            }
+            binding.progressBarContainer.addView(progressBar)
+        }
     }
 
     /**
@@ -71,6 +89,7 @@ class StoryFragment : Fragment() {
      * if it reaches the maximum, it slides for the next story
      */
     private fun initProgressUpdaterRunnable(){
+        progressBar = binding.progressBarContainer.getChildAt(stories[currentGroupIndex].lastSeenStoryIndex) as ProgressBar
         progressBar.progress = 0
         initProgressUpdateInterval(currentGroupIndex,stories[currentGroupIndex].lastSeenStoryIndex)
 
@@ -87,6 +106,23 @@ class StoryFragment : Fragment() {
             }
         }
         handler.postDelayed(progressUpdater, progressUpdateInterval) // Call this function after initialization
+    }
+
+    /**
+     * It handles to progress bars
+     */
+    private fun handleProgressBars(storyIndex: Int) {
+        progressBar = binding.progressBarContainer.getChildAt(storyIndex) as ProgressBar
+        for (i in 0 until binding.progressBarContainer.childCount) {
+            val progressBar = binding.progressBarContainer.getChildAt(i) as ProgressBar
+            if (i < storyIndex) {
+                progressBar.progress = progressBar.max // Mark previous stories as completed
+            } else if (i == storyIndex) {
+                progressBar.progress = 0 // Reset current story's progress bar
+            } else {
+                progressBar.progress = 0 // Reset future stories' progress bars
+            }
+        }
     }
 
     /**
@@ -135,8 +171,7 @@ class StoryFragment : Fragment() {
      * It slides moves to the previous story when slide left, next story when slide right
      */
     @SuppressLint("ClickableViewAccessibility")
-
-    private fun initTouchOverlay2() {
+    private fun initTouchOverlay() {
         val touchOverlay = binding.touchOverlay
         touchOverlay.setOnTouchListener { _, event ->
             when (event.action) {
@@ -179,6 +214,8 @@ class StoryFragment : Fragment() {
         if (currentGroupIndex < adapter.itemCount - 1){
 
             val nextItem =  currentGroupIndex + 1
+            createProgressBars(stories[nextItem].storyItems.size)
+            handleProgressBars(stories[nextItem].lastSeenStoryIndex)
             // next story group
             initProgressUpdateInterval(nextItem, stories[nextItem].lastSeenStoryIndex)
             viewPager2.setCurrentItem(nextItem, true) // true for smooth scrolling
@@ -199,6 +236,11 @@ class StoryFragment : Fragment() {
         if (currentGroupIndex > 0) {
             val prevItem = currentGroupIndex - 1
             // prev story group
+
+            // handle progress bar
+            createProgressBars(stories[prevItem].storyItems.size)
+            handleProgressBars(stories[prevItem].lastSeenStoryIndex)
+
             initProgressUpdateInterval(prevItem, stories[prevItem].lastSeenStoryIndex)
             viewPager2.setCurrentItem(prevItem, true) // true for smooth scrolling
             currentGroupIndex = prevItem // Update the current page index
@@ -224,6 +266,8 @@ class StoryFragment : Fragment() {
         val currentStoryGroup = stories[currentGroupIndex]
         if (currentStoryGroup.lastSeenStoryIndex < currentStoryGroup.storyItems.size - 1){
             val nextStoryIndex =  currentStoryGroup.lastSeenStoryIndex + 1
+            // handle progress bar
+            handleProgressBars(nextStoryIndex)
             currentStoryGroup.lastSeenStoryIndex = nextStoryIndex //update storyIndex
             adapter.setLastSeenStoryIndex(currentGroupIndex,nextStoryIndex)
             // next story group
@@ -244,6 +288,9 @@ class StoryFragment : Fragment() {
         if (currentStoryGroup.lastSeenStoryIndex > 0) {
             val prevStoryIndex = currentStoryGroup.lastSeenStoryIndex - 1
             currentStoryGroup.lastSeenStoryIndex = prevStoryIndex
+
+            // handle progress bar
+            handleProgressBars(prevStoryIndex)
             adapter.setLastSeenStoryIndex(currentGroupIndex,prevStoryIndex)
             // prev story group
             initProgressUpdateInterval(currentGroupIndex, stories[currentGroupIndex].lastSeenStoryIndex)

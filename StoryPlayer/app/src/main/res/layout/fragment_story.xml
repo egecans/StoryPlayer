@@ -6,6 +6,21 @@
     android:layout_height="match_parent"
     tools:context=".story.StoryFragment">
 
+    <LinearLayout
+        android:id="@+id/progressBarContainer"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"> <!-- weightSum should be set to 1 for equal distribution -->
+
+        <!-- Progress bars will be added programmatically here -->
+
+    </LinearLayout>
+
+    <!--
     <ProgressBar
         android:id="@+id/storyProgressBar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -13,8 +28,9 @@
         android:layout_height="8dp"
         android:indeterminate="false"
         android:progress="0"
+        android:progressDrawable="@drawable/story_progress_bar"
         app:layout_constraintTop_toTopOf="parent"
-        android:max="100"/> <!-- Assuming a 100 scale for the progress -->
+        android:max="100"/> <!- Assuming a 100 scale for the progress -->
 
 
 
