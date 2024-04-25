@@ -129,22 +129,30 @@ class StoryFragment : Fragment() {
      * It gives stories into the list
      */
     private fun initStories(): List<StoryGroup>{
+        val boyStory = listOf(
+            StoryItem(R.drawable.fake_erkek, false),
+            StoryItem( R.drawable.araba, false))
+        val girlyStory = listOf(
+            StoryItem(R.drawable.fake_tirnak, false),
+            StoryItem( R.drawable.manzara, false))
+        val sceneStory = listOf(
+            StoryItem(R.drawable.manzara_iki, false))
         val firstStoryList = listOf(
             StoryItem(R.drawable.cat, false),
             StoryItem(R.raw.short_video, true),
-            StoryItem( R.drawable.jph, false))
+            StoryItem( R.drawable.kelebek, false))
         val secondStoryList = listOf(
             StoryItem(R.drawable.golf, false),
             StoryItem( R.drawable.dag, false),
-            StoryItem(R.raw.short_video, true))
-        val thirdStoryList = listOf(
             StoryItem(R.raw.long_video, true),
             StoryItem(R.drawable.kahve, false),
             StoryItem( R.drawable.lamba, false))
         return listOf(
+            StoryGroup(girlyStory),
             StoryGroup(firstStoryList),
-            StoryGroup(secondStoryList),
-            StoryGroup(thirdStoryList))
+            StoryGroup(boyStory),
+            StoryGroup(sceneStory),
+            StoryGroup(secondStoryList))
     }
 
     /**
